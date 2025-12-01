@@ -4,24 +4,31 @@
 // ==========================
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// ---------- Conexión MySQLi (Railway + local)
+// ---------- Conexión MySQLi (Railway + local usando MYSQL_URL)
 
-// Primero intentamos con las variables de entorno de Railway
-$host       = getenv('MYSQLHOST') ?: '127.0.0.1';
-$usuario    = getenv('MYSQLUSER') ?: 'root';
+// 1) Intentar con la URL completa que pone Railway (MYSQL_URL)
+$url = getenv('MYSQL_URL');
 
-// Soportar los dos posibles nombres: MYSQLPASSWORD o MYSQLCONTRASEÑA
-$contraseña = getenv('MYSQLPASSWORD');
-if ($contraseña === false || $contraseña === '') {
-    $contraseña = getenv('MYSQLCONTRASEÑA') ?: '12345';
+if ($url) {
+    $parts = parse_url($url);
+
+    $host       = $parts['host'] ?? '127.0.0.1';
+    $port       = $parts['port'] ?? 3306;
+    $usuario    = $parts['user'] ?? 'root';
+    $contraseña = $parts['pass'] ?? '';
+    $bd         = isset($parts['path']) ? ltrim($parts['path'], '/') : 'railway';
+} else {
+    // 2) Fallback local por si corres el proyecto en tu PC
+    $host       = '127.0.0.1';
+    $port       = 3306;
+    $usuario    = 'root';
+    $contraseña = '12345';     // tu pass local
+    $bd         = 'dental22';  // tu BD local
 }
-
-$bd   = getenv('MYSQLDATABASE') ?: 'dental22';
-$port = getenv('MYSQLPORT') ?: 3306;
 
 $conn = @new mysqli($host, $usuario, $contraseña, $bd, (int)$port);
 if ($conn->connect_error) {
-  die("Error de conexión a la base de datos: " . htmlspecialchars($conn->connect_error));
+    die("Error de conexión a la base de datos: " . htmlspecialchars($conn->connect_error));
 }
 $conn->set_charset("utf8mb4");
 
@@ -296,6 +303,7 @@ if ($rol === 'paciente') {
 </script>
 </body>
 </html>
+
 
 
 
