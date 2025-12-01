@@ -9,9 +9,15 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 // Primero intentamos con las variables de entorno de Railway
 $host       = getenv('MYSQLHOST') ?: '127.0.0.1';
 $usuario    = getenv('MYSQLUSER') ?: 'root';
-$contraseña = getenv('MYSQLPASSWORD') ?: '12345';
-$bd         = getenv('MYSQLDATABASE') ?: 'dental22';
-$port       = getenv('MYSQLPORT') ?: 3306;
+
+// Soportar los dos posibles nombres: MYSQLPASSWORD o MYSQLCONTRASEÑA
+$contraseña = getenv('MYSQLPASSWORD');
+if ($contraseña === false || $contraseña === '') {
+    $contraseña = getenv('MYSQLCONTRASEÑA') ?: '12345';
+}
+
+$bd   = getenv('MYSQLDATABASE') ?: 'dental22';
+$port = getenv('MYSQLPORT') ?: 3306;
 
 $conn = @new mysqli($host, $usuario, $contraseña, $bd, (int)$port);
 if ($conn->connect_error) {
@@ -290,5 +296,6 @@ if ($rol === 'paciente') {
 </script>
 </body>
 </html>
+
 
 
