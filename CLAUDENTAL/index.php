@@ -4,17 +4,21 @@
 // ==========================
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// ---------- Conexión MySQLi (local)
-$host = "localhost";
-$usuario = "root";
-$contraseña = "12345";
-$bd = "dental22";
+// ---------- Conexión MySQLi (Railway + local)
 
-$conn = @new mysqli($host, $usuario, $contraseña, $bd);
+// Primero intentamos con las variables de entorno de Railway
+$host       = getenv('MYSQLHOST') ?: '127.0.0.1';
+$usuario    = getenv('MYSQLUSER') ?: 'root';
+$contraseña = getenv('MYSQLPASSWORD') ?: '12345';
+$bd         = getenv('MYSQLDATABASE') ?: 'dental22';
+$port       = getenv('MYSQLPORT') ?: 3306;
+
+$conn = @new mysqli($host, $usuario, $contraseña, $bd, (int)$port);
 if ($conn->connect_error) {
   die("Error de conexión a la base de datos: " . htmlspecialchars($conn->connect_error));
 }
-$conn->set_charset("utf8");
+$conn->set_charset("utf8mb4");
+
 
 // ---------- Helpers
 if (!function_exists('e')) {
@@ -286,3 +290,4 @@ if ($rol === 'paciente') {
 </script>
 </body>
 </html>
+
